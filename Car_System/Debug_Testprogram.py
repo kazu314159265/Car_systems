@@ -4,7 +4,7 @@ import subprocess
 
 
 SPEED_PULS_INPUT = 6
-TIRE_circumference = 1.818 #単位はメートル
+TIRE_circumference = 1.841 #単位はメートル
 
 pi = pigpio.pi()
 pi.set_mode(SPEED_PULS_INPUT, pigpio.INPUT)
