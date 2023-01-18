@@ -1,15 +1,13 @@
-# one shot measurement only
-#
 import pigpio
 import time
+import subprocess
 
-HC_SR04_trig = 5
-HC_SR04_echo = 6
+
+SPEED_PULS_INPUT = 6
 TIRE_circumference = 1.818 #単位はメートル
 
 pi = pigpio.pi()
-pi.set_mode(HC_SR04_trig, pigpio.OUTPUT)
-pi.set_mode(HC_SR04_echo, pigpio.INPUT)
+pi.set_mode(SPEED_PULS_INPUT, pigpio.INPUT)
 
 t_now = 0
 t_last = 0
@@ -28,9 +26,10 @@ def cbf(gpio, level, tick):  # call back function for pulse detect _/~~\__
 
         # microseconds to seconds, per_second to per_hour
         speed =  (TIRE_circumference / (timepassed / 1000000)) * 3.6
-        print('{"tick":%10d, "time_us": %6d, "speed": %.2f}' % (tick, timepassed, speed))
+        Display_Comand = ["figlet", str(int(speed))]
+        subprocess.call(Display_Comand)
 
 
-cb = pi.callback(HC_SR04_echo, pigpio.RISING_EDGE, cbf)
+cb = pi.callback(SPEED_PULS_INPUT, pigpio.RISING_EDGE, cbf)
 pause()
 pi.stop()
