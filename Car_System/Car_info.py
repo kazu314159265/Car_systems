@@ -67,8 +67,12 @@ class Car_info:
     車の情報を取得, 管理するクラス
     """
 
-    t_now = 0
-    t_last = 0
+    speed_t_now = 0
+    speed_t_last = 0
+    tacho_t_now = 0
+    tacho_t_last = 0
+    Car_Speed = 0
+    Car_tacho = 0
 
     def __init__(self, pi, SPEED_PULS_INPUT=6, TIRE_circumference=1.841):
         """
@@ -87,5 +91,56 @@ class Car_info:
         self.SPEED_PULS_INPUT = SPEED_PULS_INPUT
         self.TIRE_circumference = TIRE_circumference
 
+        cb = pi.callback(SPEED_PULS_INPUT, pigpio.RISING_EDGE, SpeedCallBack)
+
+    def SpeedCallBack(gpio, level, tick):
+        """
+        車速信号パルスの立ち上がりエッジにより呼び出されるコールバック関数. 割り込み用関数
+
+        Parameters
+        ----------
+        gpio : ?
+            未検証
+        level : int
+            立ち上がりエッジか立ち下がりエッジかを検出するための変数
+        tick : float?(未検証)
+            コールバック関数が呼び出されたときのタイマーの値を取得するための変数
+        """
+        global speed_t_now, speed_t_last
+
+        speed_t_last = speed_t_now
+        speed_t_now = tick
+        if (speed_t_last >= speed_t_now):  # if wrapped 32bit value,
+            timepassed = speed_t_now - speed_t_last
+        else:
+            timepassed = speed_t_now + (0xffffffff + 1 - speed_t_last)
+
+        # microseconds to seconds, per_second to per_hour
+        self.Car_Speed =  (TIRE_circumference / (timepassed / 1000000)) * 3.6
     
+    def TachoCallBack(gpio, level, tick):  
+        """
+        エンジン回転パルスの立ち上がりエッジにより呼び出されるコールバック関数. 割り込み用関数
+
+        Parameters
+        ----------
+        gpio : ?
+            未検証
+        level : int
+            立ち上がりエッジか立ち下がりエッジかを検出するための変数
+        tick : float?(未検証)
+            コールバック関数が呼び出されたときのタイマーの値を取得するための変数
+        """
+        global tacho_t_now, tacho_t_last
+
+        tacho_t_last = tacho_t_now
+        tacho_t_now = tick
+        if (tacho_t_last >= tacho_t_now):  # if wrapped 32bit value,
+            timepassed = tacho_t_now - tacho_t_last
+        else:
+            timepassed = tacho_t_now + (0xffffffff + 1 - tacho_t_last)
+
+        # microseconds to seconds, per_second to per_hour
+        self.Car_tacho =  (1 / (timepassed / 1000000)) * 60
+        
 
