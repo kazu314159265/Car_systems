@@ -6,6 +6,7 @@ import pigpio
 車の情報を管理するモジュール.
 コメントの書き方は下記を参考にした.
 https://qiita.com/simonritchie/items/49e0813508cad4876b5a
+https://qiita.com/taka-kawa/items/673716d77795c937d422
 
 """
 
@@ -27,8 +28,8 @@ class MCP3208:
 
         Parameters
         ----------
-        pi : 未検証
-            外部で作成したインスタンスを代入する変数
+        pi : class
+            外部でインスタンス化したpigpio.piのクラスオブジェクトを代入する変数
         ref_volt : float
             基準電圧の値
         """
@@ -88,8 +89,8 @@ class Car_info:
 
         Parameters
         ----------
-        pi : ?
-            外部で作成したpigpio.piのインスタンスを代入する変数.
+        pi : class
+            外部でインスタンス化したpigpio.piのクラスオブジェクトを代入する変数.
         SPEED_PULS_INPUT : int
             車速信号を入力するピン番号を指定する変数.
         TIRE_circumference : float
@@ -99,7 +100,7 @@ class Car_info:
         self.SPEED_PULS_INPUT = SPEED_PULS_INPUT
         self.TIRE_circumference = TIRE_circumference
 
-        Back_Gear_Flag = 0
+        self.Back_Gear_Flag = 0
         # 各種フラグ
 
         callback_speed = pi.callback(
@@ -113,6 +114,14 @@ class Car_info:
         )
 
     def CallBack_Set(Back_Gear_CBF=UndifinedCallBack):
+        """
+        バックギアに入れたときに実行されるコールバック関数を定義する関数
+
+        Parameters
+        ----------
+        Back_Gear_CBF : function
+            バックギアに入れたときコールバックされる関数を代入する変数
+        """
         self.Back_Gear_CBF = Back_Gear_CBF
 
     def SpeedCallBack(gpio, level, tick):
@@ -138,7 +147,7 @@ class Car_info:
             timepassed = speed_t_now + (0xFFFFFFFF + 1 - speed_t_last)
 
         # microseconds to seconds, per_second to per_hour
-        self.Car_Speed = (TIRE_circumference / (timepassed / 1000000)) * 3.6
+        self.Car_Speed = (self.TIRE_circumference / (timepassed / 1000000)) * 3.6
 
     def TachoCallBack(gpio, level, tick):
         """
@@ -167,7 +176,7 @@ class Car_info:
 
     def BackGearCallBack(gpio, level, tick):
         self.Back_Gear_Flag = level
-        Back_Gear_CBF()
+        self.Back_Gear_CBF()
 
     def UndifinedCallBack():
         pass
