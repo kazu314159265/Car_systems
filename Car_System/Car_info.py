@@ -83,7 +83,7 @@ class Car_info:
     Car_tacho = 0
     # 車速及び回転数の変数
 
-    def __init__(self, pi, SPEED_PULS_INPUT=6, TIRE_circumference=1.841):
+    def __init__(self, pi, SPEED_PULS_INPUT=6, TACHO_PULS_INPUT=7, TIRE_circumference=1.841):
         """
         初期化処理.
 
@@ -98,22 +98,23 @@ class Car_info:
         """
         self.pi = pi
         self.SPEED_PULS_INPUT = SPEED_PULS_INPUT
+        self.TACHO_PULS_INPUT = TACHO_PULS_INPUT
         self.TIRE_circumference = TIRE_circumference
 
         self.Back_Gear_Flag = 0
         # 各種フラグ
 
         callback_speed = pi.callback(
-            SPEED_PULS_INPUT, pigpio.RISING_EDGE, SpeedCallBack
+            SPEED_PULS_INPUT, pigpio.RISING_EDGE, self.SpeedCallBack
         )
         callback_tacho = pi.callback(
-            SPEED_PULS_INPUT, pigpio.RISING_EDGE, TachoCallBack
+            SPEED_PULS_INPUT, pigpio.RISING_EDGE, self.TachoCallBack
         )
-        callback_backgear = pi.callback(
-            SPEED_PULS_INPUT, pigpio.EITHER_EDGE, BackGearCallBack
-        )
+        #callback_backgear = pi.callback(
+        #    SPEED_PULS_INPUT, pigpio.EITHER_EDGE, self.BackGearCallBack
+        #)
 
-    def CallBack_Set(self, Back_Gear_CBF):
+    #def CallBack_Set(self, Back_Gear_CBF):
         """
         バックギアに入れたときに実行されるコールバック関数を定義する関数
 
@@ -122,7 +123,7 @@ class Car_info:
         Back_Gear_CBF : function
             バックギアに入れたときコールバックされる関数を代入する変数
         """
-        self.Back_Gear_CBF = Back_Gear_CBF
+        #self.Back_Gear_CBF = Back_Gear_CBF
 
     def SpeedCallBack(self, gpio, level, tick):
         """
@@ -137,17 +138,16 @@ class Car_info:
         tick : float?(未検証)
             コールバック関数が呼び出されたときのタイマーの値を取得するための変数
         """
-        global speed_t_now, speed_t_last  # この文いらないかも
 
-        speed_t_last = speed_t_now
-        speed_t_now = tick
-        if speed_t_last >= speed_t_now:  # if wrapped 32bit value,
-            timepassed = speed_t_now - speed_t_last
+        self.speed_t_now = tick
+        if self.speed_t_now >= self.speed_t_last:  # if wrapped 32bit value,
+            timepassed = self.speed_t_now - self.speed_t_last
         else:
-            timepassed = speed_t_now + (0xFFFFFFFF + 1 - speed_t_last)
+            timepassed = self.speed_t_now + (0xFFFFFFFF + 1 - self.speed_t_last)
 
         # microseconds to seconds, per_second to per_hour
         self.Car_Speed = (self.TIRE_circumference / (timepassed / 1000000)) * 3.6
+        self.speed_t_last = self.speed_t_now
 
     def TachoCallBack(self, gpio, level, tick):
         """
@@ -162,21 +162,20 @@ class Car_info:
         tick : float?(未検証)
             コールバック関数が呼び出されたときのタイマーの値を取得するための変数
         """
-        global tacho_t_now, tacho_t_last  # この文いらないかも
 
-        tacho_t_last = tacho_t_now
-        tacho_t_now = tick
-        if tacho_t_last >= tacho_t_now:  # if wrapped 32bit value,
-            timepassed = tacho_t_now - tacho_t_last
+        self.tacho_t_now = tick
+        if self.tacho_t_now >= self.tacho_t_last:  # if wrapped 32bit value,
+            timepassed = self.tacho_t_now - self.tacho_t_last
         else:
-            timepassed = tacho_t_now + (0xFFFFFFFF + 1 - tacho_t_last)
+            timepassed = self.tacho_t_now + (0xFFFFFFFF + 1 - self.tacho_t_last)
 
         # microseconds to seconds, per_second to per_hour
         self.Car_tacho = (1 / (timepassed / 1000000)) * 60
+        self.tacho_t_last = self.tacho_t_now
 
-    def BackGearCallBack(self, gpio, level, tick):
-        self.Back_Gear_Flag = level
-        self.Back_Gear_CBF()
+    #def BackGearCallBack(self, gpio, level, tick):
+    #    self.Back_Gear_Flag = level
+    #    self.Back_Gear_CBF()
 
     def UndifinedCallBack():
         pass
