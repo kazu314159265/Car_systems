@@ -56,7 +56,7 @@ class MCP3208:
                 "channel must be between 0 and 7"
             )  # チャンネル数が0-7の範囲にあるかチェック
 
-        cmnd = [(0b00000110 + int(Channel / 4)), ((Channel - 4) << 6), 0]
+        cmnd = [(0b00000110 + int(Channel / 4)), ((Channel &0b00000011) << 6), 0]
         c, row = self.pi.spi_xfer(self.hndl, cmnd)
         voltage = (((row[1] & 0b00001111) << 8) + row[2]) * self.ref_volt / 4096
         return voltage
@@ -113,7 +113,7 @@ class Car_info:
             SPEED_PULS_INPUT, pigpio.EITHER_EDGE, BackGearCallBack
         )
 
-    def CallBack_Set(Back_Gear_CBF=UndifinedCallBack):
+    def CallBack_Set(self, Back_Gear_CBF):
         """
         バックギアに入れたときに実行されるコールバック関数を定義する関数
 
@@ -124,7 +124,7 @@ class Car_info:
         """
         self.Back_Gear_CBF = Back_Gear_CBF
 
-    def SpeedCallBack(gpio, level, tick):
+    def SpeedCallBack(self, gpio, level, tick):
         """
         車速信号パルスの立ち上がりエッジにより呼び出されるコールバック関数. 割り込み用関数
 
@@ -149,7 +149,7 @@ class Car_info:
         # microseconds to seconds, per_second to per_hour
         self.Car_Speed = (self.TIRE_circumference / (timepassed / 1000000)) * 3.6
 
-    def TachoCallBack(gpio, level, tick):
+    def TachoCallBack(self, gpio, level, tick):
         """
         エンジン回転パルスの立ち上がりエッジにより呼び出されるコールバック関数. 割り込み用関数
 
@@ -174,7 +174,7 @@ class Car_info:
         # microseconds to seconds, per_second to per_hour
         self.Car_tacho = (1 / (timepassed / 1000000)) * 60
 
-    def BackGearCallBack(gpio, level, tick):
+    def BackGearCallBack(self, gpio, level, tick):
         self.Back_Gear_Flag = level
         self.Back_Gear_CBF()
 
