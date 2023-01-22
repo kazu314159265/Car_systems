@@ -108,7 +108,7 @@ class Car_info:
             SPEED_PULS_INPUT, pigpio.RISING_EDGE, self.SpeedCallBack
         )
         callback_tacho = pi.callback(
-            SPEED_PULS_INPUT, pigpio.RISING_EDGE, self.TachoCallBack
+            TACHO_PULS_INPUT, pigpio.RISING_EDGE, self.TachoCallBack
         )
         #callback_backgear = pi.callback(
         #    SPEED_PULS_INPUT, pigpio.EITHER_EDGE, self.BackGearCallBack
