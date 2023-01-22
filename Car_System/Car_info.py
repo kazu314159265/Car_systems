@@ -35,7 +35,7 @@ class MCP3208:
         """
         self.pi = pi
         self.ref_volt = ref_volt  # 基準電圧設定
-        self.hndl = pi.spi_open(self.channel, self.baud, self.flag)  # デバイスオープン
+        self.hndl = pi.spi_open(self.channel, self.baud, self.flags)  # デバイスオープン
 
     def AnalogIn(self, Channel=0):
         """
@@ -58,7 +58,7 @@ class MCP3208:
 
         cmnd = [(0b00000110 + int(Channel / 4)), ((Channel - 4) << 6), 0]
         c, row = self.pi.spi_xfer(self.hndl, cmnd)
-        voltage = (((row[1] & 0b00001111) < 8) + row[2]) * self.ref_volt / 4096
+        voltage = (((row[1] & 0b00001111) << 8) + row[2]) * self.ref_volt / 4096
         return voltage
 
     def Cleanup(self):
