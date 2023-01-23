@@ -17,15 +17,16 @@ def cbf(gpio, level, tick):  # call back function for pulse detect _/~~\__
     global t_now, t_last
 
     if (level == 1):  # right after the rising edge
-        t_last = t_now
+        
         t_now = tick
-        if (t_last >= t_now):  # if wrapped 32bit value,
+        if (t_now >= t_last):  # if wrapped 32bit value,
             timepassed = t_now - t_last
         else:
             timepassed = t_now + (0xffffffff + 1 - t_last)
 
         # microseconds to seconds, per_second to per_hour
         speed =  (TIRE_circumference / (timepassed / 1000000)) * 3.6
+        t_last = t_now
         Display_Comand = ["figlet", str(int(speed))]
         subprocess.call(Display_Comand)
 
