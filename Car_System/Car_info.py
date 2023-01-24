@@ -92,7 +92,9 @@ class Car_info:
         pi : class
             外部でインスタンス化したpigpio.piのクラスオブジェクトを代入する変数.
         SPEED_PULS_INPUT : int
-            車速信号を入力するピン番号を指定する変数.
+            車速パルス信号を入力するピン番号を指定する変数.
+        TACHO_PULS_INPUT : int
+            エンジン回転数計のパルス信号を入力するピン番号を指定する変数.
         TIRE_circumference : float
             タイヤの円周. 単位はメートル.
         """
