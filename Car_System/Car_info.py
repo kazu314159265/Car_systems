@@ -49,7 +49,7 @@ class MCP3208:
         Returns
         -------
         voltage : float
-            基準電圧に換算した電圧値
+            コンストラクタで設定した基準電圧に換算した電圧値
         """
         if not 0 <= Channel < 8:
             raise SPIBadChannel(
