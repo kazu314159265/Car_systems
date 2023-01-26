@@ -1,5 +1,3 @@
-import time
-
 import pigpio
 
 """
@@ -56,7 +54,7 @@ class MCP3208:
                 "channel must be between 0 and 7"
             )  # チャンネル数が0-7の範囲にあるかチェック
 
-        cmnd = [(0b00000110 + int(Channel / 4)), ((Channel &0b00000011) << 6), 0]
+        cmnd = [(0b00000110 + int(Channel / 4)), ((Channel & 0b00000011) << 6), 0]
         c, row = self.pi.spi_xfer(self.hndl, cmnd)
         voltage = (((row[1] & 0b00001111) << 8) + row[2]) * self.ref_volt / 4096
         return voltage
@@ -83,7 +81,9 @@ class Car_info:
     Car_tacho = 0
     # 車速及び回転数の変数
 
-    def __init__(self, pi, SPEED_PULS_INPUT=6, TACHO_PULS_INPUT=7, TIRE_circumference=1.841):
+    def __init__(
+        self, pi, SPEED_PULS_INPUT=6, TACHO_PULS_INPUT=7, TIRE_circumference=1.841
+    ):
         """
         初期化処理.
 
@@ -106,17 +106,13 @@ class Car_info:
         self.Back_Gear_Flag = 0
         # 各種フラグ
 
-        callback_speed = pi.callback(
-            SPEED_PULS_INPUT, pigpio.RISING_EDGE, self.SpeedCallBack
-        )
-        callback_tacho = pi.callback(
-            TACHO_PULS_INPUT, pigpio.RISING_EDGE, self.TachoCallBack
-        )
-        #callback_backgear = pi.callback(
+        pi.callback(SPEED_PULS_INPUT, pigpio.RISING_EDGE, self.SpeedCallBack)
+        pi.callback(TACHO_PULS_INPUT, pigpio.RISING_EDGE, self.TachoCallBack)
+        # callback_backgear = pi.callback(
         #    SPEED_PULS_INPUT, pigpio.EITHER_EDGE, self.BackGearCallBack
-        #)
+        # )
 
-    #def CallBack_Set(self, Back_Gear_CBF):
+        # def CallBack_Set(self, Back_Gear_CBF):
         """
         バックギアに入れたときに実行されるコールバック関数を定義する関数
 
@@ -125,7 +121,7 @@ class Car_info:
         Back_Gear_CBF : function
             バックギアに入れたときコールバックされる関数を代入する変数
         """
-        #self.Back_Gear_CBF = Back_Gear_CBF
+        # self.Back_Gear_CBF = Back_Gear_CBF
 
     def SpeedCallBack(self, gpio, level, tick):
         """
@@ -175,7 +171,7 @@ class Car_info:
         self.Car_tacho = (1 / (timepassed / 1000000)) * 60
         self.tacho_t_last = self.tacho_t_now
 
-    #def BackGearCallBack(self, gpio, level, tick):
+    # def BackGearCallBack(self, gpio, level, tick):
     #    self.Back_Gear_Flag = level
     #    self.Back_Gear_CBF()
 
