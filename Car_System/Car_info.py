@@ -1,3 +1,5 @@
+import signal
+
 import pigpio
 
 """
@@ -82,7 +84,7 @@ class Car_info:
     # 車速及び回転数の変数
 
     def __init__(
-        self, pi, SPEED_PULS_INPUT=6, TACHO_PULS_INPUT=7, TIRE_circumference=1.841
+        self, pi, SPEED_PULS_INPUT=6, TACHO_PULS_INPUT=7, TIRE_circumference=0.2
     ):
         """
         初期化処理.
@@ -111,6 +113,8 @@ class Car_info:
         # callback_backgear = pi.callback(
         #    SPEED_PULS_INPUT, pigpio.EITHER_EDGE, self.BackGearCallBack
         # )
+        signal.signal(signal.SIGALRM, self.poring)
+        signal.setitimer(signal.ITIMER_REAL, 1, 1)
 
         # def CallBack_Set(self, Back_Gear_CBF):
         """
@@ -176,6 +180,9 @@ class Car_info:
     #    self.Back_Gear_CBF()
 
     def UndifinedCallBack():
+        pass
+
+    def poring():
         pass
 
 
