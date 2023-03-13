@@ -107,3 +107,6 @@ class NJU72343:
         sleep(self.write_wate_time * 2)
         self.pi.write(self.DATA_pin, 0)
 
+
+class SPIBadChannel(Exception):
+    pass
