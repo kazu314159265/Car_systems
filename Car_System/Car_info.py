@@ -1,5 +1,7 @@
 import signal
+import threading
 
+import micropyGPS
 import pigpio
 
 """
@@ -70,6 +72,13 @@ class Car_info:
         """
         # self.Back_Gear_CBF = Back_Gear_CBF
 
+        self.gps = micropyGPS.MicropyGPS(9, "dd")  # MicroGPSオブジェクトを生成する。
+        # 引数はタイムゾーンの時差と出力フォーマット
+
+        gpsthread = threading.Thread(target=self.rungps, args=())
+        gpsthread.daemon = True
+        gpsthread.start()  # スレッドを起動
+
     def SpeedCallBack(self, gpio, level, tick):
         """
         車速信号パルスの立ち上がりエッジにより呼び出されるコールバック関数. 割り込み用関数
@@ -127,3 +136,13 @@ class Car_info:
 
     def poring():
         pass
+
+    def rungps():  # GPSモジュールを読み、GPSオブジェクトを更新する
+        s = serial.Serial("/dev/serial0", 9600, timeout=10)
+        s.readline()  # 最初の1行は中途半端なデーターが読めることがあるので、捨てる
+        while True:
+            sentence = s.readline().decode("utf-8")  # GPSデーターを読み、文字列に変換する
+            if sentence[0] != "$":  # 先頭が'$'でなければ捨てる
+                continue
+            for x in sentence:  # 読んだ文字列を解析してGPSオブジェクトにデーターを追加、更新する
+                self.gps.update(x)
