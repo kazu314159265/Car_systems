@@ -1,8 +1,10 @@
 import signal
+import subprocess
 import threading
 
 import micropyGPS
 import pigpio
+import serial
 
 """
 車の情報を管理するモジュール.
@@ -137,7 +139,7 @@ class Car_info:
     def poring():
         pass
 
-    def rungps():  # GPSモジュールを読み、GPSオブジェクトを更新する
+    def rungps(self):  # GPSモジュールを読み、GPSオブジェクトを更新する
         s = serial.Serial("/dev/serial0", 9600, timeout=10)
         s.readline()  # 最初の1行は中途半端なデーターが読めることがあるので、捨てる
         while True:
@@ -146,3 +148,33 @@ class Car_info:
                 continue
             for x in sentence:  # 読んだ文字列を解析してGPSオブジェクトにデーターを追加、更新する
                 self.gps.update(x)
+
+    def time_set(self):
+        while True:
+            if self.gps.clean_sentences > 20:
+                if self.gps.timestamp[0] < 24:
+                    h = self.gps.timestamp[0]
+                else:
+                    h = self.gps.timestamp[0] - 24
+                time_string = (
+                    str(h)
+                    + ":"
+                    + str(self.gps.timestamp[1])
+                    + ":"
+                    + str(self.gps.timestamp[2])
+                )
+                date = self.gps.date_string()
+                date_string = (
+                    "20"
+                    + date[6]
+                    + date[7]
+                    + date[5]
+                    + date[3]
+                    + date[4]
+                    + date[2]
+                    + date[0]
+                    + date[1]
+                )
+                date_set_string = date_string + " " + time_string
+                date_set_command = ["sudo date -s", date_set_string]
+                subprocess.call(date_set_command)
